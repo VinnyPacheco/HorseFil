@@ -21,34 +21,62 @@
   ============================================================ -->
 
   <!-- ============================================================
-    🟢 CAPTURA DO GCLID E FUNÇÃO PARA ANEXAR À URL
-    Plataforma: SA → parâmetro "sub3" (+ sub1=google & sub2=horsefil fixos na URL)
+    🟢 CAPTURA DOS IDENTIFICADORES DO GOOGLE ADS E ENVIO À SMARTADV
+    sub3 = GCLID | sub4 = GBRAID | sub5 = WBRAID
+    sub1=google e sub2=horsefil permanecem fixos nos links da oferta.
   ============================================================ -->
   <script>
-    function getGclid() {
+    function getGoogleClickIds() {
       var params = new URLSearchParams(window.location.search);
-      var gclid = params.get('gclid');
-      if (gclid) {
-        localStorage.setItem('gclid_saved', gclid);
-        return gclid;
+
+      var currentGclid = params.get('gclid') || '';
+      var currentGbraid = params.get('gbraid') || '';
+      var currentWbraid = params.get('wbraid') || '';
+
+      // Se a visita atual trouxer um novo identificador do Google Ads,
+      // limpa os IDs antigos para evitar misturar cliques diferentes.
+      if (currentGclid || currentGbraid || currentWbraid) {
+        localStorage.removeItem('gclid_saved');
+        localStorage.removeItem('gbraid_saved');
+        localStorage.removeItem('wbraid_saved');
+
+        if (currentGclid) {
+          localStorage.setItem('gclid_saved', currentGclid);
+        }
+        if (currentGbraid) {
+          localStorage.setItem('gbraid_saved', currentGbraid);
+        }
+        if (currentWbraid) {
+          localStorage.setItem('wbraid_saved', currentWbraid);
+        }
       }
-      return localStorage.getItem('gclid_saved');
+
+      return {
+        gclid: currentGclid || localStorage.getItem('gclid_saved') || '',
+        gbraid: currentGbraid || localStorage.getItem('gbraid_saved') || '',
+        wbraid: currentWbraid || localStorage.getItem('wbraid_saved') || ''
+      };
     }
 
-    function appendGclidToUrl(url) {
-      var gclid = getGclid();
-      if (!gclid) return url;
+    function appendGoogleTrackingToUrl(url) {
+      var ids = getGoogleClickIds();
+      var finalUrl = new URL(url, window.location.href);
 
-      var hashIndex = url.indexOf('#');
-      var baseUrl = hashIndex >= 0 ? url.substring(0, hashIndex) : url;
-      var hash = hashIndex >= 0 ? url.substring(hashIndex) : '';
+      if (ids.gclid) {
+        finalUrl.searchParams.set('sub3', ids.gclid);
+      }
+      if (ids.gbraid) {
+        finalUrl.searchParams.set('sub4', ids.gbraid);
+      }
+      if (ids.wbraid) {
+        finalUrl.searchParams.set('sub5', ids.wbraid);
+      }
 
-      var separator = baseUrl.indexOf('?') >= 0 ? '&' : '?';
-      return baseUrl + separator + 'sub3=' + encodeURIComponent(gclid) + hash;
+      return finalUrl.toString();
     }
   </script>
   <!-- ============================================================
-    FIM — CAPTURA DO GCLID
+    FIM — CAPTURA DOS IDENTIFICADORES DO GOOGLE ADS
   ============================================================ -->
 
   <style>
@@ -497,7 +525,7 @@
       if (window.__redirecting) return false;
       window.__redirecting = true;
 
-      var finalUrl = appendGclidToUrl(url);
+      var finalUrl = appendGoogleTrackingToUrl(url);
       var redirected = false;
 
       function redirectNow() {
