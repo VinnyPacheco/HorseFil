@@ -21,9 +21,12 @@
   ============================================================ -->
 
   <!-- ============================================================
-    🟢 CAPTURA DOS IDENTIFICADORES DO GOOGLE ADS E ENVIO À SMARTADV
-    sub3 = GCLID | sub4 = GBRAID | sub5 = WBRAID
-    sub1=google e sub2=horsefil permanecem fixos nos links da oferta.
+    🟢 CAPTURA DOS IDENTIFICADORES DO GOOGLE ADS — PLATAFORMA SA
+    sub1 = google (fixo)
+    sub2 = horsefil (fixo — nome do produto)
+    sub3 = GCLID   (dinâmico)
+    sub4 = GBRAID  (dinâmico)
+    sub5 = WBRAID  (dinâmico)
   ============================================================ -->
   <script>
     function getGoogleClickIds() {
@@ -519,6 +522,7 @@
   <!-- ============================================================
     🔴 GOOGLE ADS — EVENTO DE CONVERSÃO
     Usa event_callback para garantir o envio antes de redirecionar.
+    Spinner auto-hide em 5s.
   ============================================================ -->
   <script>
     function gtag_report_conversion(url) {
@@ -527,6 +531,18 @@
 
       var finalUrl = appendGoogleTrackingToUrl(url);
       var redirected = false;
+
+      // Exibe o spinner (e o esconde após 5 segundos)
+      var loadingOverlay = document.getElementById('loadingOverlay');
+      if (loadingOverlay) {
+        setTimeout(function () {
+          loadingOverlay.classList.add('active');
+
+          setTimeout(function () {
+            loadingOverlay.classList.remove('active');
+          }, 5000);
+        }, 120);
+      }
 
       function redirectNow() {
         if (redirected) return;
